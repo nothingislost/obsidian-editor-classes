@@ -1,6 +1,15 @@
 import { Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin } from "@codemirror/view";
-import { editorViewField, MarkdownView, parseFrontMatterStringArray, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import {
+  App,
+  editorViewField,
+  EventRef,
+  MarkdownView,
+  parseFrontMatterStringArray,
+  Plugin,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 
 export default class CSSClassManagerPlugin extends Plugin {
   async onload() {
@@ -14,14 +23,17 @@ export function cssClassManagerPlugin(plugin: CSSClassManagerPlugin): Extension 
 
 class CSSClassManagerExtension {
   markdownView: MarkdownView;
+  app: App;
   file: TFile;
   leaf: WorkspaceLeaf;
   plugin: CSSClassManagerPlugin;
   cssClasses: string[];
   containerEl: HTMLElement;
+  eventUninstaller: EventRef;
 
   constructor(view: EditorView, plugin: CSSClassManagerPlugin) {
     this.plugin = plugin;
+    this.app = plugin.app;
     this.markdownView = view.state.field(editorViewField);
     this.file = this.markdownView.file;
     this.leaf = this.markdownView.leaf;
@@ -33,12 +45,12 @@ class CSSClassManagerExtension {
         this.cssClasses = classes;
         this.addClasses(this.cssClasses);
       }
+      this.eventUninstaller = this.app.metadataCache.on("changed", file => {
+        if (file === this.file) {
+          this.updateClasses();
+        }
+      });
     }
-    plugin.app.metadataCache.on("changed", file => {
-      if (file === this.file) {
-        this.updateClasses();
-      }
-    });
   }
 
   updateClasses() {
@@ -63,13 +75,16 @@ class CSSClassManagerExtension {
   }
 
   get frontmatter(): any | null {
-    let fileCache = this.plugin.app.metadataCache.getFileCache(this.file);
+    let fileCache = this.app.metadataCache.getFileCache(this.file);
     return fileCache?.frontmatter;
   }
 
   update() {}
 
   destroy() {
+    if (this.file && this.eventUninstaller) {
+      this.app.metadataCache.offref(this.eventUninstaller);
+    }
     if (this.cssClasses && this.cssClasses.length > 0) {
       this.removeClasses(this.cssClasses);
     }
