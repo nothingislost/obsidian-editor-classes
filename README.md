@@ -1,4 +1,4 @@
-## Obsidian Auto Classes
+## Obsidian Editor Classes
 
 An Obsidian plugin that applies frontmatter css classes to the editor DOM
 
