@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-editor-classes",
+  "name": "obsidian-editor-classes",
+  "version": "0.0.1",
+  "minAppVersion": "0.13.4",
+  "description": "An experimental Obsidian plugin that adds frontmatter CSSClasses to the editor DOM",
+  "author": "NothingIsLost",
+  "authorUrl": "https://github.com/nothingislost",
+  "isDesktopOnly": true
+}
